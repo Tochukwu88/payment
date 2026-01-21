@@ -21,7 +21,7 @@ import java.math.BigDecimal;
                 @Index(name = "idx_ledger_account", columnList = "account_id")
         }
 )
-public class Ledger extends BaseEntity {
+public class LedgerEntry extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "transaction_id", nullable = false)
     private Transaction transaction;

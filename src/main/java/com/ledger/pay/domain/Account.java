@@ -14,7 +14,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Account extends BaseEntity {
-    @Column(name = "account_ref", nullable = false, length = 100)
+    @Column(name = "account_ref", nullable = false, length = 100,unique = true)
     private String accountRef;
 
     @Enumerated(EnumType.STRING)
