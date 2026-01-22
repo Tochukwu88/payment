@@ -33,6 +33,8 @@ public class Transaction extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+    @Column(name = "idempotency_hash", length = 64)
+    private String idempotencyHash;
 
 
     @Column(columnDefinition = "jsonb")
