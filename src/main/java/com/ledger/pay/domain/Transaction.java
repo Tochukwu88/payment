@@ -5,6 +5,10 @@ import com.ledger.pay.enums.TransactionStatus;
 import com.ledger.pay.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.util.Map;
 
 @Entity
 @Getter
@@ -37,7 +41,8 @@ public class Transaction extends BaseEntity {
     private String idempotencyHash;
 
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String metadata;
+    private Map<String, Object> metadata;
 
 }

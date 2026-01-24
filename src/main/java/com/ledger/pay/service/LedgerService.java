@@ -31,6 +31,7 @@ public class LedgerService {
     private final TransactionRepository transactionRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
     private  final OutboxRepository outboxRepository;
+    private final KafkaEventPublisher kafkaEventPublisher;
     //        NOTE: this is a naive implementation of this operation its for learning purpose this is not suited for production
 
 
@@ -135,6 +136,7 @@ public class LedgerService {
             String reference,
             String description
     ) {
+        log.info("init deposit of {} from {} to {}",amount,externalAccountRef,userWalletRef);
         String hash = computeIdempotencyHash(
                 externalAccountRef,
                 userWalletRef,
@@ -171,8 +173,9 @@ public class LedgerService {
                 .build();
 
         try {
-            transaction = transactionRepository.saveAndFlush(transaction);
+            transaction = transactionRepository.save(transaction);
         } catch (DataIntegrityViolationException e) {
+            log.info("error {}",e);
             // Race condition: another request with same reference just committed
             return transactionRepository.findByReference(reference)
                     .orElseThrow(() -> new IllegalStateException("Transaction disappeared"));
@@ -199,6 +202,18 @@ public class LedgerService {
 
         ledgerEntryRepository.save(debitEntry);
         ledgerEntryRepository.save(creditEntry);
+        Outbox outbox = Outbox.builder()
+                .aggregateId(transaction.getId().toString())
+                .aggregateType(AggregateType.TRANSACTION)
+                .eventType(EventType.TRANSFER_COMPLETED)  // You might want a DEPOSIT_COMPLETED event
+                .payload(Map.of(
+                        "sourceAccountRef", externalAccountRef,
+                        "transactionRef", transaction.getReference(),
+                        "destinationAccountRef", userWalletRef,
+                        "amount", amount
+                ))
+                .build();
+        outboxRepository.save(outbox);
 
         return transaction;
 
@@ -356,7 +371,9 @@ public class LedgerService {
     }
     @Transactional
     public  Outbox processEvent(Outbox event){
-        log.info("Would send to Kafka: type={}, payload={}", event.getEventType(), event.getPayload());
+        log.info(" sending to Kafka: type={}, payload={}", event.getEventType(), event.getPayload());
+        kafkaEventPublisher.publish(resolveTopic(event),event.getAggregateId(),event.getPayload());
+
         event.markProcessed();
         outboxRepository.save(event);
         return  event;
@@ -377,5 +394,14 @@ public class LedgerService {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-256 not available", e);
         }
+    }
+    private String resolveTopic(Outbox event) {
+
+
+        return switch (event.getEventType()) {
+            case TRANSFER_COMPLETED -> "payment-events";
+            case SAGA_COMPLETED, SAGA_FAILED -> "saga-events";
+            default -> "ledger-events";
+        };
     }
 }
