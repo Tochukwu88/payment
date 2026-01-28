@@ -8,6 +8,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @Entity
@@ -39,6 +40,9 @@ public class Transaction extends BaseEntity {
     private String description;
     @Column(name = "idempotency_hash", length = 64)
     private String idempotencyHash;
+
+    @Column(name = "amount", nullable = false, precision = 19, scale = 4)
+    private BigDecimal amount;
 
 
     @JdbcTypeCode(SqlTypes.JSON)

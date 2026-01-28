@@ -38,6 +38,5 @@ public class LedgerEntry extends BaseEntity {
     @Column(nullable = false, precision = 19, scale = 4)
     private BigDecimal amount;
 
-    @Column(name = "balance_after", nullable = false, precision = 19, scale = 4)
-    private BigDecimal balanceAfter;
+
 }
