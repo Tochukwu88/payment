@@ -42,7 +42,7 @@ This system demonstrates how to build a reliable, consistent financial ledger th
 Every financial transaction creates two ledger entries that must balance:
 
 
-**Key principle**: Money doesn't appear or disappear—it moves between accounts.
+**Key principle**: Money doesn't appear or disappear,it moves between accounts.
 
 
 ### Idempotency
@@ -92,8 +92,8 @@ You cannot atomically update a database AND send a Kafka message. The outbox pat
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/payment-ledger.git
-cd payment-ledger
+git clone https://github.com/Tochukwu88/payment.git
+cd payment
 ```
 
 ### 2. Start Infrastructure
